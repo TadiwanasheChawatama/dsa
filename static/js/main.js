@@ -1,93 +1,85 @@
-// document.addEventListener('DOMContentLoaded', () => {
-  const mainForm = document.getElementById('main-form');
-  const sortingForm = document.getElementById('sorting-form');
-  const sortAlgorithm = document.getElementById('sort-algorithm');
-  const sortBy = document.getElementById('sort-by');
-  const sortOrder = document.getElementById('sort-order');
-  const search = document.getElementById('search-val');
-  const searchAlgorithm = document.getElementById('search-algorithm');
+const mainForm = document.getElementById('main-form');
+const sortingForm = document.getElementById('sorting-form');
+const sortAlgorithm = document.getElementById('sort-algorithm');
+const sortBy = document.getElementById('sort-by');
+const sortOrder = document.getElementById('sort-order');
+const search = document.getElementById('search-val');
+const searchAlgorithm = document.getElementById('search-algorithm');
+const runtimeBtn = document.getElementById('runtime-btn');
 
+// showcase transitions
+const left = document.querySelector('.left');
+const right = document.querySelector('.right');
+const container = document.querySelector('.container');
 
-  // showcase transitions
-  const left = document.querySelector('.left');
-  const right = document.querySelector('.right');
-  const container = document.querySelector('.container');
-
-  left.addEventListener('mouseenter',() => {
-    container.classList.add('hover-left');
-  })
-  left.addEventListener('mouseleave',() => {
-      container.classList.remove('hover-left');
-
-  })
-  right.addEventListener('mouseenter',() => {
-      container.classList.add('hover-right');
-  })
-  right.addEventListener('mouseleave',() => {
-      container.classList.remove('hover-right');
-  })
-
-
-  // Add change event listener for form submission
-  sortingForm.addEventListener('submit', submitForm);
-  sortAlgorithm.addEventListener('change', submitForm);
-  sortBy.addEventListener('change', submitForm);
-  sortOrder.addEventListener('change', submitForm);
-  search.addEventListener('keyup', searchStudent);
-  search.addEventListener('event.key === "Enter"', searchStudent);
-  searchAlgorithm.addEventListener('change', searchStudent);
-
-
-  mainForm.addEventListener('keyup', e=>{
-    if(e.keyCode == 13){
-        e.preventDefault();
-        submitForm();
-    }
+left.addEventListener('mouseenter',() => {
+  container.classList.add('hover-left');
 })
 
-  function submitForm(e) {
-    e.preventDefault();
-    const requestData = {
-      sortAlgorithm: sortAlgorithm.value,
-      sortBy: sortBy.value,
-      sortOrder: sortOrder.value
-    };
-    
-    localStorage.setItem('sortAlgorithm', sortAlgorithm.value);
-    localStorage.setItem('sortBy', sortBy.value);
-    localStorage.setItem('sortOrder', sortOrder.value);
-    localStorage.setItem('searchAlgorithm', searchAlgorithm.value)
+left.addEventListener('mouseleave',() => {
+    container.classList.remove('hover-left');
+})
+
+right.addEventListener('mouseenter',() => {
+    container.classList.add('hover-right');
+})
+
+right.addEventListener('mouseleave',() => {
+    container.classList.remove('hover-right');
+})
 
 
-    fetch('/sort', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
+// Add change event listener for form submission
+sortingForm.addEventListener('submit', submitForm);
+sortAlgorithm.addEventListener('change', submitForm);
+sortAlgorithm.addEventListener('change', runtimeBtnActive);
+sortBy.addEventListener('change', submitForm);
+sortOrder.addEventListener('change', submitForm);
+search.addEventListener('keyup', searchStudent);
+search.addEventListener('event.key === "Enter"', searchStudent);
+searchAlgorithm.addEventListener('change', searchStudent);
+
+
+
+function submitForm(e) {
+  e.preventDefault();
+  const requestData = {
+    sortAlgorithm: sortAlgorithm.value,
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value
+  };
+  
+  localStorage.setItem('sortAlgorithm', sortAlgorithm.value);
+  localStorage.setItem('sortBy', sortBy.value);
+  localStorage.setItem('sortOrder', sortOrder.value);
+  localStorage.setItem('searchAlgorithm', searchAlgorithm.value)
+  fetch('/sort', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestData)
+  })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('Request failed');
+      }
     })
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Request failed');
-        }
-      })
-      .then(data => {
-        updateTable(data);
-      })
-      .catch(error => {
-        console.error('Request error:', error);
-        // Handle the error here, e.g., display an error message to the user
-      });
-  }
+    .then(data => {
+      updateTable(data);
+    })
+    .catch(error => {
+      console.error('Request error:', error);
+    });
+}
 
 function updateTable(data) {
   const tableBody = document.querySelector("#student-table tbody");
 
   // Clear existing rows from the table
   tableBody.innerHTML = '';
-  
   if (data.length > 0) {
   num = 1
   data.forEach(student => {
@@ -105,7 +97,7 @@ function updateTable(data) {
     <td>${student.program}</td>
     <td>${student.gpa}</td>
     <td>${student.accommodation}</td>
-  
+    <button class="del-btn" onclick={deleteStudent("${student._id}")}>X</button>
     `;
     tableBody.appendChild(row);
   })}else{
@@ -141,10 +133,10 @@ updateLocal()
 
 if (storedSortOrder) {
   const requestData = {
-    sortAlgorithm: sortAlgorithm.value | storedSortAlgorithm,
-    sortBy: sortBy.value | storedSortBy,
-    sortOrder: sortOrder.value | storedSortOrder,
-    searchAlgorithm: searchAlgorithm.value | storedsearchAlgorithm
+    sortAlgorithm: sortAlgorithm.value || storedSortAlgorithm,
+    sortBy: sortBy.value || storedSortBy,
+    sortOrder: sortOrder.value || storedSortOrder,
+    searchAlgorithm: searchAlgorithm.value || storedsearchAlgorithm
   };
 
   fetch('/sort', {
@@ -166,18 +158,18 @@ if (storedSortOrder) {
     })
     .catch(error => {
       console.error('Request error:', error);
-      // Handle the error here, e.g., display an error message to the user
     });
 }
 
-
-
-
-
-
+search.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){
+    e.preventDefault();
+  }
+})
 
 
 function searchStudent(e) {
+  e.preventDefault();
   const requestData = {
     searchTerm: e.target.value,
     sortOrder: localStorage.getItem('sortOrder'),
@@ -205,16 +197,39 @@ function searchStudent(e) {
     })
     .catch(error => {
       console.error('Request error:', error);
-      // Handle the error here, e.g., display an error message to the user
     });
 }
 
+function deleteStudent(studentid) {
+  confirm('Are you sure you want to delete this student????')
 
-
-
-
-// });
-
+  const requestData = {
+    sortAlgorithm: sortAlgorithm.value || storedSortAlgorithm,
+    sortBy: sortBy.value || storedSortBy,
+    sortOrder: sortOrder.value || storedSortOrder,
+    studentId: studentid
+  };
+  fetch('/delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestData)
+  })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('Request failed');
+      }
+    })
+    .then(data => {
+      updateTable(data);
+    })
+    .catch(error => {
+      console.error('Request error:', error);
+    });
+}
 
 
 function sortByCol(col){
@@ -248,38 +263,16 @@ function sortByCol(col){
       })
       .catch(error => {
         console.error('Request error:', error);
-        // Handle the error here, e.g., display an error message to the user
       });
 }
 
-var backArrow = document.getElementById('back-arrow');
-var section1 = document.getElementById('showcase');
-var section2 = document.getElementById('query-implementation');
-var section3 = document.getElementById('registration-form');
-var lastScrollPosition = document.documentElement.scrollTop;
 
-function toggleBackArrowVisibility() {
-  var currentScrollPosition = document.documentElement.scrollTop;
 
-  if (currentScrollPosition <= section1.offsetTop) {
-    backArrow.classList.remove('show');
-  } else {
-    backArrow.classList.add('show');
-  }
-
-  lastScrollPosition = currentScrollPosition;
+function runtimeBtnActive(){
+    
+  runtimeBtn.classList.add('active');
+  setTimeout(() => {
+      runtimeBtn.classList.remove('active');
+      
+  }, 5000);
 }
-
-section1.addEventListener('click', function() {
-  backArrow.classList.add('show');
-});
-
-section2.addEventListener('click', function() {
-  backArrow.classList.remove('show');
-});
-
-section3.addEventListener('click', function() {
-  backArrow.classList.remove('show');
-});
-
-window.addEventListener('scroll', toggleBackArrowVisibility);

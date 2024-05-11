@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students Portal</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}"> 
+    <link rel="stylesheet" href="{{url_for('static', filename='css/slider.css')}}"> 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
 </head>
 <body>
     <main id="main-container">
         <section class="showcase viewport100" id="showcase">
             <div class="container">
                 <div class="split left" >
-                    <h1>Student`s Application</h1>
+                    <h1>Students Application</h1>
                     <a href="#registration-form" class="button" id="goto-registration-form">Apply</a>
                 </div>
                 <div class="split right">
@@ -29,11 +31,11 @@
                     </svg>
                 </div>
             </div>
-            
         </section>
+
         <section class="query-implementation viewport100" id="query-implementation">
-            <section class="query-form">
-                <form id="sorting-form" method="post" action="{{ url_for('render_portal') }}">
+            <div class="query-form">
+                <form id="sorting-form" method="post" >
                     <div class="query-col">
                         <div class="input-row">
                             <select name="sort_algorithm" title="sort_algorithm" id="sort-algorithm">
@@ -44,17 +46,6 @@
                               <option value="merge_sort">Merge Sort</option>
                               <option value="quick_sort">Quick Sort</option>
                               <option value="heap_sort">Heap Sort</option>
-                              <option value="radix_sort">Radix Sort</option>
-                              <option value="shell_sort">Shell Sort</option>
-                              <option value="bucket_sort">Bucket Sort</option>
-                              <option value="counting_sort">Counting Sort</option>
-                              <option value="cycle_sort">Cycle Sort</option>
-                              <option value="comb_sort">Comb Sort</option>
-                              <option value="gnome_sort">Gnome Sort</option>
-                              <option value="cocktail_sort">Cocktail Sort</option>
-                              <option value="odd_even_sort">Odd-Even Sort</option>
-                              <option value="tim_sort">Tim Sort</option>
-                              <option value="bitonic_sort">Bitonic Sort</option>
                             </select>
                         </div>
                     </div>
@@ -84,7 +75,7 @@
                         </div>
                     </div>
                 </form>
-                <form action="" id="searching-form" method="POST">
+                <form action="" id="searching-form" method="POST" onsubmit='return false;'>
                     <input type="text" placeholder="Search..." name="search_val" title="search_val" id="search-val">
                     <div class="row">
                         <div class="input-row">
@@ -94,13 +85,13 @@
                               <option value="hash_table_search">Hash Table Search</option>
                               <option value="exponential_search">Exponential Search</option>
                               <option value="interpolation_search">Interpolation Search</option>
-                              <option value="jump_search">Jump Search</option>
+                              <option value="ternary_search">Ternary Search</option>
                             </select>
                         </div>
                     </div>
-                  </form>
-            </section>
-            <section class="students-show">
+                </form>
+            </div>
+            <div >
                 <table class="table" id="student-table">
                   <thead>
                     <tr>
@@ -131,14 +122,14 @@
                         <td>{{student.program}}</td>
                         <td>{{student.gpa}}</td>
                         <td>{{student.accommodation}}</td>
-                    
+                        <td><button class="del-btn" onclick={deleteStudent({student._id})}>X</button></td>
                     </tr>
                     {% endfor %}           
                 </tbody> 
                 <div class="scroll-arrow">
                     <svg width="30px" height="20px">
                         <path
-                            stroke="#ffffff" 
+                            stroke="#333" 
                             fill="none" 
                             stroke-width="2px"
                             d="M2.000,5.000 L15.000,18.000 L28.000,5.000">
@@ -148,7 +139,7 @@
                 <div class="scroll-arrow-up">
                     <svg width="30px" height="20px">
                         <path
-                          stroke="#ffffff" 
+                          stroke="#333" 
                           fill="none" 
                           stroke-width="2px"
                           d="M2.000,18.000 L15.000,5.000 L28.000,18.000">
@@ -158,11 +149,66 @@
                 </table>
                 
                 <div class="back-arrow" id="back-arrow"><a href="#showcase"><img src="../static/images/back-arrow.png" alt=""></a></div>
-            </section>
+                <form action="{{ url_for('plot_data') }}" method="GET" class="graph-form">
+                    <button id="plot-btn-submit">Plot Graphs</button>
+                    <button type="button" id="plot-btn">View Graphs</button>
+                    <button type="button" id="prev-runtimes"  onclick={runtimeActive()} >Sort Runtimes</button>
+                    <button type="button" id="prev-runtimes"  onclick={runtimeActiveSearch()} >Search Runtimes</button>
+                </form>
+            </div>
+            <div class="runtime-btn" id="runtime-btn" onclick={runtimeActive()}>
+                <h4>View <br> Runtimes</h4>
+            </div>
         </section>
+
+        <div class="loader">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <section class="viewport100 runtime-img" id="runtime" onclick={runtimeRemove()}>
+            <div class="blur"></div>
+            <img src="{{ url_for('static', filename='images/runtime.png') }}" class="img-graph">
+        </section>
+
+        <section class="viewport100 runtime-img" id="runtimeSearch" onclick={runtimeSearchRemove()}>
+            <div class="blur"></div>
+            <img src="{{ url_for('static', filename='images/runtime_search.png') }}" class="img-graph">
+        </section>
+
+        <section class="viewport100 main-slider" id="main-slider">
+            <div class="slider" id="slider">
+                <div class="slide current">
+                    <div class="content">
+                        <h1>Subjects Distribution</h1>
+                    </div>
+                    <img src="{{ url_for('static', filename='images/subjects_applied.png') }}" class="img-graph">
+                </div>
+                <div class="slide">
+                    <div class="content">
+                        <h1>GPA Distribution</h1>
+                    </div>
+                    <img src="{{ url_for('static', filename='images/gpa_distribution.png') }}" class="img-graph">
+                </div> 
+                <div class="slide">
+                    <div class="content">
+                        <h1>Gender Balance</h1>
+                    </div>
+                    <img src="{{ url_for('static', filename='images/gender_balance.png') }}" class="img-graph">
+                </div> 
+            </div>
+            <div class="buttons">
+                <button id="prev"><img src="{{ url_for('static', filename='images/arrow-left.png') }}"></button>
+                <button id="next"><img src="{{ url_for('static', filename='images/arrow-right.png') }}"></button>
+                <button id="close"><img src="{{ url_for('static', filename='images/close.png') }}"></button>
+            </div>
+        </section>
+
         <section class="registration-form viewport100" id="registration-form">
-            <h1 class="form-header">Students Registration Portal</h1>
-            <form method="POST" enctype="multipart/form-data" id="main-form">
+               <div class="blur"></div>
+                <h1 class="form-header">Students Registration Portal</h1>
+                <form method="POST" enctype="multipart/form-data" id="main-form">
                 <div class="row">
                     <div class="input50">
                         <input type="text" placeholder="First Name" name="firstname" title="firstname" required>
@@ -180,7 +226,6 @@
                             <option value="" disabled selected hidden>Select Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
-                            <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
@@ -242,7 +287,7 @@
                 <div class="scroll-arrow-up">
                     <svg width="30px" height="20px">
                         <path
-                          stroke="#000000" 
+                          stroke="#333" 
                           fill="none" 
                           stroke-width="2px"
                           d="M2.000,18.000 L15.000,5.000 L28.000,18.000">
@@ -251,10 +296,15 @@
                     </div>
                 </form>
                 <div class="back-arrow" id="back-arrow"><a href="#query-implementation"><img src="../static/images/back-arrow.png" alt=""></a></div>
-            </section>
+            
+    
+        </section>
+    
     </main>
 
     <script src="{{url_for('static', filename='js/main.js')}}"></script>
+    <script src="{{url_for('static', filename='js/slider.js')}}"></script>
+    
 </body>
 
 </html>
